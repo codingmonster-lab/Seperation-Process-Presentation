@@ -1,0 +1,519 @@
+---
+title: "e-메탄올 정제용 메탄올–물 증류탑 설계"
+subtitle: "Separation Process · Team project: Column Design"
+author: "분리공정 3조"
+date: "2026. 11."
+lang: ko
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    width: 1600
+    height: 900
+    margin: 0.06
+    slide-number: c/t
+    show-slide-number: all
+    transition: none
+    center: false
+    auto-stretch: false
+    embed-resources: true
+    html-math-method: katex
+    footer: "Methanol–Water Distillation Column Design"
+---
+
+## 발표 흐름
+
+:::: {.columns}
+::: {.column width="55%"}
+1. **Choice of System and Separation Method** · e-메탄올과 물 분리
+2. **Method Implementation (and Test)** · McCabe–Thiele 코드, Example 21.2로 검증
+3. **Problem Statement / Specification** · 20 t/h, $x_D \ge 0.9983$, $x_B \le 0.001$
+4. **Design** · McCabe–Thiele → DWSIM 엄밀 계산 → 단수–환류비
+5. **Other Considerations** · 체판 수력학, 효율, 압력강하, TAC
+6. **최종 설계안과 한계**
+:::
+::: {.column width="45%"}
+::: {.box .small}
+**설계 질문**
+
+- 목표 조성 달성에 필요한 이론단수·환류비는?
+- McCabe–Thiele 예비 설계를 DWSIM에 넣으면 조성·열부하는 어떻게 바뀌나?
+- 실제 체판 몇 장, 탑경·높이는? 비용 최소 조건은?
+:::
+:::
+::::
+
+::: notes
+15분 기준 · 배경·VLE 3분 / 방법 검증·사양 2분 / 작도·DWSIM 4분 / 체판·효율 3분 / 비용·결론 3분
+:::
+
+# Choice of System and Separation Method
+
+## 메탄올의 산업적 중요성
+
+:::: {.columns}
+::: {.column width="52%"}
+![](figures/methanol_end_uses.png){width="100%"}
+:::
+::: {.column width="48%"}
+- 에틸렌·프로필렌·암모니아와 함께 **4대 기초 화학물질** — 다른 화학제품 생산의 출발 원료
+- 세계 생산 **약 98 Mt/년 (2019)**, 10년 사이 약 2배 (증가분 대부분 중국 석탄 기반)
+- 수요 전망: 2025년 120 Mt 이상, 2050년 **500 Mt** (IRENA Transforming Energy Scenario)
+- 원료: 천연가스 ~65 %, 석탄 ~35 %, 바이오·재생 **< 1 %**
+- 생애주기 배출 **0.3 Gt CO₂/년** = 화학·석유화학 부문 배출의 약 10 %
+- 화석 메탄올 생산비 100–250 USD/t
+
+::: tiny
+IRENA & Methanol Institute (2021), *Innovation Outlook: Renewable Methanol*, Key findings pp. 4–5, p. 12, Fig. 6 p. 23
+:::
+:::
+::::
+
+::: notes
+화학 원료가 약 2/3, 연료가 약 1/3. 화석 원료 비중이 99 % 이상이라 2050년 500 Mt을 화석으로 만들면 1.5 Gt CO₂/년.
+:::
+
+## 왜 e-메탄올인가 · 증류가 왜 중요한가
+
+:::: {.columns}
+::: {.column width="50%"}
+**재생 메탄올 두 가지 경로**
+
+- 바이오메탄올: 폐목재·농업 부산물·바이오가스·도시 고형폐기물·흑액
+- **e-메탄올**: 그린 수소 + 포집 CO₂ (BECCS, DAC) — 기존 합성 공정과 사실상 같은 상용 기술
+
+| 구분 | 생산비 (USD/t) |
+|---|---:|
+| 화석 메탄올 | 100–250 |
+| e-메탄올 (현재, BECCS CO₂) | 800–1,600 |
+| e-메탄올 (현재, DAC CO₂) | 1,200–2,400 |
+| e-메탄올 (2050 전망) | 250–630 |
+
+::: small
+재생 메탄올 생산은 연 0.2 Mt 미만 (2021 보고서 기준) → 규모 확대 초기 단계
+:::
+:::
+::: {.column width="50%"}
+**상용화 사례**
+
+- 2025.5 덴마크 Kassø: 첫 대규모 상업 e-메탄올 플랜트, **연 42,000 t**, 304 MW 태양광 + 바이오 CO₂, 탄소발자국 최대 97 % 저감 → Maersk 선박 연료, LEGO·Novo Nordisk 원료
+- 해운 연료: Maersk 메탄올 이중연료 대형 컨테이너선 12척 인도 완료 (2025.6, HD현대중공업 건조)
+
+::: box
+**증류와의 연결** · $\mathrm{CO_2 + 3H_2 \rightarrow CH_3OH + H_2O}$ → 조메탄올에 물 약 36 wt%
+
+본 설계 기준 재비기 열 **약 2.2 GJ/t-메탄올**, 정제비 (TAC) **약 30 USD/t** → e-메탄올 생산비의 약 2–4 %. 스팀을 화석 연료로 만들면 탄소발자국에도 직접 반영
+:::
+
+::: tiny
+IRENA & MI (2021) pp. 4–5 · European Energy 보도자료 (2025.5.13) · Maritime Executive (2025.6)
+:::
+:::
+::::
+
+::: notes
+정제비 계산: q_r 7,979 kW, 탑정 12,802 kg/h → 2.24 GJ/t. TAC 3.03 M USD/년 ÷ (12.8 t/h × 8,000 h) ≈ 29.6 USD/t.
+:::
+
+## 왜 메탄올–물인가 · e-메탄올 정제
+
+:::: {.columns}
+::: {.column width="50%"}
+- CO₂ 수소화: $\mathrm{CO_2 + 3H_2 \rightarrow CH_3OH + H_2O}$
+- 메탄올 1 mol당 물 1 mol 생성 → 조메탄올의 물 **약 36 wt%**
+- 제품 규격 (IMPCA): 물 **≤ 0.100 wt%**
+- 메탄올 끓는점 64.7 °C, 물 100 °C → 상압 **연속 증류** 1기로 분리
+
+```
+ CO2 + H2 → [반응기] → 조메탄올 (x_F = 0.50)
+                          │
+                    ┌─────┴─────┐
+                    │  증류탑    │ → 탑정: 메탄올 (x_D ≥ 0.9983)
+                    │ 101.3 kPa │
+                    └─────┬─────┘
+                          └──→ 탑저: 물 (x_B ≤ 0.001)
+```
+:::
+::: {.column width="50%"}
+| 물성 | 메탄올 (A) | 물 (B) |
+|---|---:|---:|
+| CAS | 67-56-1 | 7732-18-5 |
+| 몰질량 (g/mol) | 32.0419 | 18.0153 |
+| 정상 끓는점 (K) | 337.8 | 373.17 |
+| 몰 기화잠열 (kJ/mol) | 35.21 | 40.65 |
+| Antoine $a,b,c$ (bar, K) | 5.20409, 1581.341, −33.50 | 5.07680, 1659.793, −45.854 |
+
+::: tiny
+NIST Chemistry WebBook. Antoine 식 $\log_{10}P' = a - b/(T+c)$; 355 K 이상에서는 고온 구간 계수 사용.
+:::
+:::
+::::
+
+## 비이상 VLE와 물성 모델 선정
+
+:::: {.columns}
+::: {.column width="52%"}
+![](figures/dwsim_compare.png){width="100%"}
+:::
+::: {.column width="48%"}
+실측 26점 (Álvarez 등 2011, 101.3 kPa) vs DWSIM 모델
+
+| 모델 | $T_{bub}$ 평균오차 (K) | 최대오차 (K) | $y_e$ 평균오차 |
+|---|---:|---:|---:|
+| Wilson | 0.212 | 0.583 | 0.0042 |
+| NRTL | **0.149** | 0.520 | 0.0026 |
+| UNIFAC | 0.171 | **0.482** | **0.0010** |
+| UNIQUAC | 4.030 | 7.535 | 0.0025 |
+
+::: box
+**UNIFAC 채택** · McCabe–Thiele 작도에 직접 쓰는 값은 $y_e$ → $y_e$ 오차 최소 모델 선택. 공비점 없음, $y_e > x_e$ 전 구간.
+:::
+:::
+::::
+
+# Method Implementation (and Test)
+
+## McCabe–Thiele 코드 구현 · Example 21.2로 테스트
+
+![](figures/ex212_mccabe.png){width="78%" fig-align="center"}
+
+:::: {.columns}
+::: {.column width="55%"}
+| 항목 | 강의자료 풀이 | 구현 코드 |
+|---|---:|---:|
+| $x_F, x_D, x_B$ | 0.440, 0.974, 0.0235 | 0.440, 0.974, 0.0235 |
+| $D$ / $B$ (kmol/h) | 153.4 / 196.6 | 153.1 / 196.4 |
+| $N_{min}$ (Fenske, α = 2.5) | — | 8.04 (재비기 포함) |
+| $R_{Dm}$ (i) / (ii) / (iii) | — | 1.400 / 1.165 / 2.135 |
+:::
+::: {.column width="45%"}
+::: {.small}
+- 계단 작도: 탑정부터, 교점 통과 시 탈거부로 전환 (최적 공급단)
+- Raoult + Antoine 평형곡선으로 바꾸면 (i) $R_{Dm}$ = 1.422, 이상단 12 · 공급단 6
+- $R_{Dm}$은 핀치점 $y'$에 민감: $\partial R_{Dm}/\partial y' \approx -11$ → 평형곡선 출처를 명시해야 함
+:::
+:::
+::::
+
+## 같은 코드로 DWSIM 작도 재현
+
+![](figures/mw_mccabe_python.png){width="70%" fig-align="center"}
+
+| 항목 | DWSIM McCabe–Thiele | Python (DWSIM UNIFAC 224점) |
+|---|---:|---:|
+| $R_{Dm}$ · 핀치점 | 0.7459 · (0.500, 0.7854) | 0.7459 · (0.500, 0.7854) |
+| $N_{min}$ (전환류) | 10 | 10 |
+| $R_D = 1.3R_{Dm} = 0.9697$ | 26 트레이 + 재비기, 공급 21번 | 26 트레이 + 재비기, 공급 21번 |
+
+# Problem Statement / Specification
+
+## 설계 조건
+
+:::: {.columns}
+::: {.column width="55%"}
+| 항목 | 설계 기준 |
+|---|---|
+| 물성 모델 | UNIFAC (DWSIM 9) |
+| 압력 | 탑정 101.3 kPa(abs) (예비 계산은 ΔP = 0) |
+| 공급 | 20,000 kg/h, $x_F = 0.50$, 포화액체 $q = 1$ |
+| 탑정 | $x_D \ge 0.9983$ → 물 0.0957 wt% (< IMPCA 0.100) |
+| 탑저 | $x_B \le 0.001$ → 메탄올 0.178 wt% |
+| 장치 | 전응축기 + 부분재비기, 체판탑 |
+:::
+::: {.column width="45%"}
+**물질수지** $F = D + B$, $\;Fx_F = Dx_D + Bx_B$
+
+| 흐름 | kmol/h |
+|---|---:|
+| $F$ | 799.09 |
+| $D$ | 399.82 |
+| $B$ | 399.26 (110.906 mol/s) |
+
+::: small
+메탄올 회수율 $Dx_D/Fx_F \approx$ **99.90 %**
+
+처음엔 $x_D = 0.995$로 잡았으나 물 0.282 wt% → IMPCA 초과 → **0.9983**으로 상향
+:::
+:::
+::::
+
+# Design · 이론단과 환류비
+
+## McCabe–Thiele 예비 설계 (DWSIM, UNIFAC)
+
+:::: {.columns}
+::: {.column width="58%"}
+![](figures/mccabe.png){width="100%"}
+:::
+::: {.column width="42%"}
+| 항목 | 결과 |
+|---|---:|
+| $R_{Dm}$ | 0.7459 |
+| $R_D = 1.3R_{Dm}$ | 0.9697 |
+| $N_{min}$ | 10 |
+| 이론단수 | 26 트레이 + 재비기 = 27 |
+| 공급단 | 탑정에서 21번째 |
+
+::: small
+$$R_{Dm} = \frac{x_D - y'}{y' - x'} = \frac{0.9983 - 0.7854}{0.7854 - 0.500}$$
+
+정류부 조작선 $y = 0.4923x + 0.5068$, 교점 (0.500, 0.7530)
+:::
+:::
+::::
+
+## DWSIM 엄밀 계산 · 사양 충족 환류비 찾기
+
+:::: {.columns}
+::: {.column width="52%"}
+28 위치 (전응축기 + 26 트레이 + 재비기), 공급 22, $B$ = 110.906 mol/s 고정 → $R_D$ 이분법
+
+| $R_D$ | $x_D$ | $x_B$ | 판정 |
+|---:|---:|---:|---|
+| 0.96970 | 0.997914 | — | 탑정 미달 |
+| 1.00000 | 0.998403 | 0.000892 | 충족 |
+| 0.99250 | 0.998298 | 0.000998 | 탑정 미달 |
+| **0.99264** | **0.998300** | **0.000996** | **충족** |
+
+::: small
+탑저 사양이 먼저 충족 → **탑정 조성이 환류비 결정**
+:::
+:::
+::: {.column width="48%"}
+**CMO 가정 점검** (단별 엔탈피 수지)
+
+| 구간 | 몰유량 변화 |
+|---|---:|
+| 정류부 $L$, Stage 2 → 21 | 110.19 → 100.81 mol/s (−8.5 %) |
+| 탈거부 $V$, Stage 22 → 27 | 211.88 → 194.81 mol/s (−8.1 %) |
+
+**열부하** ($R_D$ = 0.99264): $q_c$ = 7,843 kW, $q_r$ = 7,979 kW
+
+$FH_F + q_r = DH_D + BH_B + q_c$ → $q_r - q_c$ = 135.62 kW 일치
+
+::: box
+몰 잠열 차이 (35.2 vs 40.7 kJ/mol) → CMO 붕괴 → 작도값 0.9697로는 미달, **0.99264** 필요
+:::
+:::
+::::
+
+## 단수 ↔ 환류비 ↔ 열부하
+
+:::: {.columns}
+::: {.column width="55%"}
+![](figures/reflux_vs_stages.png){width="100%"}
+:::
+::: {.column width="45%"}
+정압 101.3 kPa, 사양 충족 경계
+
+| DWSIM 위치 | 공급 | $R_D$ | $q_c$ (kW) | $q_r$ (kW) |
+|---:|---:|---:|---:|---:|
+| 26 | 20 | 1.03967 | 8,028 | 8,164 |
+| 28 | 22 | 0.99264 | 7,843 | 7,979 |
+| 30 | 24 | 0.95775 | 7,706 | 7,842 |
+
+::: small
+- 26 → 28: $q_r$ −185 kW (−2.27 %), 28 → 30: −137 kW (−1.72 %) → **수확 체감**
+- 체판 ΔP 반영 시 탑저 압력·온도 상승 → 같은 위치에서 $R_D$ +0.04 내외
+:::
+:::
+::::
+
+# Other Considerations
+
+## 체판탑 설계 · Example 21.6 방식 (탑정 트레이)
+
+:::: {.columns}
+::: {.column width="45%"}
+![](figures/fair_0p5m_example_21_6.png){width="100%"}
+
+::: tiny
+트레이 간격 0.500 m, Stage 2 물성: $\rho_V$ 1.155, $\rho_L$ 754.9 kg/m³, σ 19.06 dyn/cm. 구멍 1/4 in, 피치 3/4 in, 위어 2 in.
+:::
+:::
+::: {.column width="55%"}
+$F_{LV} = \dfrac{R_D}{1+R_D}\sqrt{\rho_V/\rho_L} = 0.0195$ → $K_v$ = 0.310 ft/s (Fair)
+
+$u_c = K_v\sqrt{(\rho_L-\rho_V)/\rho_V}\,(\sigma/20)^{0.2}$ = 2.393 m/s
+
+| 항목 | 한계 속도 기준 | **80 % 운전 (설계)** |
+|---|---:|---:|
+| 기체 속도 (m/s) | 2.393 | 1.914 |
+| 기포 면적 $A_b$ (m²) | 2.564 | 3.205 |
+| 탑경 $D_c$ (m) | 2.160 | **2.415** |
+| 단당 ΔP (kPa) | 0.894 | 0.670 |
+| 다운커머 froth $Z$ (mm) | 337.8 | 276.1 |
+
+::: box
+$Z$ = 276 mm < 트레이 간격 500 mm → **다운커머 flooding 없음** (Stage 2–27 전체 점검, 최대 Stage 2)
+:::
+:::
+::::
+
+## 트레이 효율과 실제 단수
+
+:::: {.columns}
+::: {.column width="58%"}
+![](figures/murphree_mccabe_thiele.png){width="100%"}
+:::
+::: {.column width="42%"}
+**O'Connell** · $\bar\alpha = (2.479 \times 3.660 \times 7.977)^{1/3} = 4.167$, $\mu_L$ = 0.315 cP
+
+$\eta_0 = 0.492(\mu_L\bar\alpha)^{-0.245}$ = **0.4603** → 26/0.4603 → **57장**
+
+**Murphree 유효 평형선** $y_e' = y + \eta_M(y_e - y)$
+
+| $\eta_M$ | 실제 트레이 | 공급 트레이 |
+|---:|---:|---:|
+| 0.4103 | 62 | 50 |
+| **0.4603** | **55** | **45** |
+| 0.5103 | 50 | 40 |
+
+::: small
+효율 ±0.05 → 트레이 −5 / +7장. 높이 (55–57장): 29–31 m
+:::
+:::
+::::
+
+## DWSIM 검증 · 효율 + 압력강하 적용
+
+:::: {.columns}
+::: {.column width="52%"}
+![](figures/profile_57.png){width="100%"}
+:::
+::: {.column width="48%"}
+내부 트레이에 $\eta_M$ = 0.4603, 부분재비기는 평형단
+
+| 실제 트레이 | 52 | 55 | 59 |
+|---|---:|---:|---:|
+| DWSIM 위치 / 공급 | 54 / 43 | 57 / 46 | 61 / 49 |
+| 총 ΔP 입력 → 재계산 (kPa) | 34.4 → 35.4 | 46.4 → 44.8 | 37.0 → 36.8 |
+| 사양 충족 $R_D$ | 1.231 | 1.11 | 1.078 |
+| $q_c$ (kW) | 8,782 | 8,307 | 8,180 |
+| $q_r$ (kW) | 8,990 | 8,535 | 8,392 |
+
+::: small
+- 정압 계산 → 압력 프로파일 입력 → 사양 미달 → $R_D$ 상향 → 재계산 ΔP와 4 % 이내 수렴
+- 탑저 101.3 → ~147 kPa, 110.7 °C: **ΔP가 탑저 온도·열부하를 올림**
+:::
+
+::: warn
+55장 경우는 단당 ΔP 0.894 kPa (한계 속도 기준)로 입력 → 0.670 kPa (설계 기준)로 재계산 권장
+:::
+:::
+::::
+
+## 경제성 · TAC 비교 (3년 회수 기준)
+
+![](figures/tac_3yr.png){width="92%" fig-align="center"}
+
+::: {.small}
+$\mathrm{TAC} = 0.0036 \times 8000\,(7.78\,q_r + 0.354\,q_c) + C_{capital}/3$ · 스팀 7.78 USD/GJ, 냉각수 0.354 USD/GJ, 8,000 h/년, CEPCI 397 (2001) → 878.2 (2026.7)
+
+설비비: 탑 본체 + 탄소강 체판 + 고정관판형 응축기 + 케틀형 재비기 3기 (Javaloyes-Antón 등, Turton 등 상관식) · ΔP 반영 이론단 시뮬레이션 열부하 사용
+:::
+
+## TAC 결과 해석
+
+:::: {.columns}
+::: {.column width="55%"}
+단위: M USD/년
+
+| 체판 (장) | 위치 | $R_D$ | 유틸리티 | 설비비 ÷ 3 | TAC |
+|---:|---:|---:|---:|---:|---:|
+| 53 | 26 | 1.083 | 1.942 | 1.146 | 3.088 |
+| 57 | 28 | 1.036 | 1.898 | 1.152 | 3.051 |
+| 61 | 30 | 1.002 | 1.866 | 1.164 | 3.030 |
+| 66 | 32 | 0.977 | 1.841 | 1.188 | 3.029 |
+| **70** | **34** | **0.957** | **1.822** | **1.206** | **3.029** |
+| 74 | 36 | 0.943 | 1.808 | 1.229 | 3.037 |
+
+::: small
+- 66 → 70장: 투자 +55,380 USD, 유틸리티 −18,920 USD/년 → 단순 회수 2.93년, TAC 차이 **460 USD/년 (0.015 %)**
+- 70 → 74장: TAC **+7,995 USD/년 반등**
+:::
+:::
+::: {.column width="45%"}
+**교차 확인** · 다른 비용 기준 (Zhang 등 2018, β = 0.1/년, 8,500 h, 스팀 6 / 냉각수 1.5 USD/GJ), 효율 적용 DWSIM 열부하
+
+| 실제 트레이 | 52 | 55 | 59 |
+|---|---:|---:|---:|
+| 높이 (m) | 29.0 | 30.5 | 32.5 |
+| 스팀 (M USD/년) | 1.651 | 1.567 | 1.541 |
+| 냉각수 (M USD/년) | 0.403 | 0.381 | 0.375 |
+| TAC (M USD/년) | 2.069 | 1.964 | **1.932** |
+
+::: box
+두 기준 모두 **트레이 증가 → 열부하·TAC 감소**. 유틸리티 비중이 커서 단수 결정의 핵심은 재비기 스팀
+:::
+:::
+::::
+
+## 최종 설계안
+
+:::: {.columns}
+::: {.column width="55%"}
+| 항목 | 설계값 |
+|---|---|
+| 형식 | 체판탑 (sieve tray), 탄소강 |
+| 물성 모델 | UNIFAC |
+| 탑정 압력 | 101.3 kPa(abs), 체판 ΔP 반영 |
+| 이론단 | DWSIM 34 위치 (전응축기 + 32 + 재비기) |
+| 실제 체판 | **70장** ($\eta_0$ = 0.4603), 간격 0.50 m |
+| 탑경 / 높이 | **2.387 m / 37.0 m** |
+| 환류비 | 0.957 |
+| 투자비 | 3.62 M USD |
+| TAC (3년) | **3.029 M USD/년** |
+:::
+::: {.column width="45%"}
+**대안** · 66장 (높이 35.0 m, 탑경 2.399 m): TAC 차이 연 460 USD → 사실상 동등, 높이 2 m 낮음
+
+**규모 비교** · 인도네시아 바이오디젤 공장 메탄올–물 증류탑: 트레이 60장, 높이 35 m (Burmana 등 2025)
+
+::: warn
+비용은 이론단 시뮬레이션 열부하 + 문헌 상관식 예비 추정치. 공급 예열·가압 비용 제외. 66·70장 후보에 효율 적용 DWSIM 사양 확인 필요.
+:::
+:::
+::::
+
+## Other Considerations 적용 범위와 남은 과제
+
+:::: {.columns}
+::: {.column width="55%"}
+| 안내문 항목 | 이번 설계에서 다룬 내용 |
+|---|---|
+| Nonideal mixture | 실측 VLE, 4개 모델 비교 → UNIFAC |
+| Pressure drop, flooding | Fair 상관식, 탑경, 단당 ΔP, froth height |
+| Enthalpy balance | DWSIM 열수지, CMO 점검, $q_c$·$q_r$ |
+| Efficiency | O'Connell, Murphree 유효 평형선 |
+| Optimum parameters | 단수–환류비–열부하, TAC 최소 |
+| Simulator | DWSIM Property Comparison, McCabe–Thiele, 엄밀 증류탑 |
+:::
+::: {.column width="45%"}
+**남은 과제**
+
+- 66·70장 후보에 효율 + ΔP 적용 DWSIM 사양 확인
+- 공급 예열 (탑저 110 °C 물과 열교환)로 $q_r$ 절감
+- 실제 조메탄올의 다성분 (용존 CO₂, 경질분, 고급 알코올) 영향
+- 충전탑 대안 (HETP, 압력강하 비교)
+:::
+::::
+
+## 참고문헌
+
+::: small
+- McCabe, Smith, Harriott, *Unit Operations of Chemical Engineering*, Ch. 21 (Example 21.2, 21.6), Ch. 22 (Example 22.3); 강의자료 SeparationProcess 6–8
+- Álvarez, V. H. 등 (2011), 메탄올–물 101.3 kPa VLE 실측, *Physics and Chemistry of Liquids*, doi:10.1080/00319100903012403
+- NIST Chemistry WebBook — 메탄올, 물 물성 및 Antoine 계수
+- IMPCA Methanol Reference Specifications (2024)
+- IRENA & Methanol Institute (2021), *Innovation Outlook: Renewable Methanol*, <https://www.irena.org/Publications/2021/Jan/Innovation-Outlook-Renewable-Methanol>
+- European Energy (2025.5.13), Kassø e-methanol facility officially inaugurated, <https://europeanenergy.com/2025/05/13/kasso-e-methanol-facility-officially-inaugurated>
+- The Maritime Executive (2025.6), Maersk reaches milestone with delivery of 12th large methanol containership
+- DWSIM documentation — Property Package Comparison, McCabe–Thiele, Rigorous Distillation Column, Fair entrainment flooding
+- Wang 등 (2019), *Processes* 7(6) 323, Appendix A — TAC 계산 틀
+- Zhang, S. 등 (2018), *Energy* 162, 1139–1157, Appendix C — TAC 계산
+- Javaloyes-Antón 등, Appendix A; Turton 등; Di Pretoro 등 — 장비 비용 상관식
+- Luyben, W. L. (2005), *Ind. Eng. Chem. Res.* 44(20), 7800–7813 — 총괄 전열계수
+- Ramdin, M. 등 (2021), *Ind. Eng. Chem. Res.* 60(49), 17862 — 유틸리티 단가
+- Burmana 등 (2025) — 바이오디젤 공장 메탄올–물 증류탑 운전 사례
+- 팀 자료: <https://github.com/NaNha77/Separation-Process-project>
+:::
