@@ -15,8 +15,3 @@ quarto render 메탄올-물_증류탑_발표.qmd
 ```
 
 PDF가 필요하면 HTML을 Chrome에서 `?print-pdf`를 붙여 열고 인쇄 → PDF로 저장.
-
-## 출처
-- 팀 GitHub: https://github.com/NaNha77/Separation-Process-project (1–8단계, 그림, MATLAB, .dwxmz)
-- `메탄올_물_프로젝트_박태현.pdf`, `메탄올-물_증류탑_TAC_3년_박태현.pdf`, `물-메탄올 증류_TAC 계산.pdf`, `물-메탄올 증류_data.xlsx`
-- 구성 기준: `SeparationProcess_ColumnDesign.pdf`
